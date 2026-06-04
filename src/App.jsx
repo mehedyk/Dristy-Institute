@@ -3,13 +3,14 @@ import { useState, useEffect, useRef, useCallback } from "react";
 // ─── THEMES (ordered: navy → snow → ... → sunrise) ──────────────────
 const THEMES = {
   navy:     { name:"Deep Navy",      emoji:"🔵", bg:"#030912", bg2:"#061020", card:"#0A1628", p:"#2B7FE1", a:"#E8401A", tx:"#EAF2FF", mu:"#4A6E8A", gr:"43,127,225" },
-  snow:     { name:"Snow White",     emoji:"⬜", bg:"#FFFFFF", bg2:"#EFF4FF", card:"#E2EAFF", p:"#1D4ED8", a:"#DC2626", tx:"#0F172A", mu:"#4B6080", gr:"29,78,216" },
+  sunrise:  { name:"Sunrise",        emoji:"🌅", bg:"#FFFBF0", bg2:"#FFF4DC", card:"#FFECC4", p:"#B45309", a:"#0F766E", tx:"#1C0A00", mu:"#78532A", gr:"180,83,9" },
   midnight: { name:"Midnight",       emoji:"🟣", bg:"#06060F", bg2:"#0C0C1E", card:"#111128", p:"#7C6FE8", a:"#F59E0B", tx:"#F0EEFF", mu:"#504D7A", gr:"124,111,232" },
   forest:   { name:"Deep Forest",    emoji:"🟢", bg:"#030F08", bg2:"#061410", card:"#0A1E12", p:"#16A34A", a:"#D97706", tx:"#E8FAF0", mu:"#3A6A4A", gr:"22,163,74" },
   carbon:   { name:"Carbon",         emoji:"🔴", bg:"#080808", bg2:"#0F0F0F", card:"#161616", p:"#EF4444", a:"#F97316", tx:"#FAFAFA", mu:"#555555", gr:"239,68,68" },
   slate:    { name:"Deep Slate",     emoji:"🩵", bg:"#030A0F", bg2:"#061018", card:"#0A1820", p:"#06B6D4", a:"#EC4899", tx:"#E0FAFF", mu:"#2E6070", gr:"6,182,212" },
   obsidian: { name:"Obsidian Amber", emoji:"🟡", bg:"#030200", bg2:"#080704", card:"#100F08", p:"#F59E0B", a:"#10B981", tx:"#FFF8E7", mu:"#6A5A2A", gr:"245,158,11" },
   sunrise:  { name:"Sunrise",        emoji:"🌅", bg:"#FFFBF0", bg2:"#FFF4DC", card:"#FFECC4", p:"#B45309", a:"#0F766E", tx:"#1C0A00", mu:"#78532A", gr:"180,83,9" },
+  snow:     { name:"Snow White",     emoji:"⬜", bg:"#FFFFFF", bg2:"#EFF4FF", card:"#E2EAFF", p:"#1D4ED8", a:"#DC2626", tx:"#0F172A", mu:"#4B6080", gr:"29,78,216" },
   royal:    { name:"Royal Dark",     emoji:"👑", bg:"#08060F", bg2:"#100C1E", card:"#160F28", p:"#9C6EFF", a:"#D4AF37", tx:"#F5F0FF", mu:"#5A4A72", gr:"156,110,255" },
 };
 const THEME_KEYS = Object.keys(THEMES);
