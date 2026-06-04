@@ -752,6 +752,7 @@ export default function App() {
   const [lang, setLang] = useState("bn");
   const [cursorOn, setCursorOn] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [flashTrigger, setFlashTrigger] = useState(0);
   const t = THEMES[themeKey];
   const c = L[lang];
 
