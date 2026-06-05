@@ -5,12 +5,11 @@ const THEMES = {
   navy:     { name:"Deep Navy",      emoji:"🔵", bg:"#030912", bg2:"#061020", card:"#0A1628", p:"#2B7FE1", a:"#E8401A", tx:"#EAF2FF", mu:"#4A6E8A", gr:"43,127,225" },
   sunrise:  { name:"Sunrise",        emoji:"🌅", bg:"#FFFBF0", bg2:"#FFF4DC", card:"#FFECC4", p:"#B45309", a:"#0F766E", tx:"#1C0A00", mu:"#78532A", gr:"180,83,9" },
   midnight: { name:"Midnight",       emoji:"🟣", bg:"#06060F", bg2:"#0C0C1E", card:"#111128", p:"#7C6FE8", a:"#F59E0B", tx:"#F0EEFF", mu:"#504D7A", gr:"124,111,232" },
+  snow:     { name:"Snow White",     emoji:"⬜", bg:"#FFFFFF", bg2:"#EFF4FF", card:"#E2EAFF", p:"#1D4ED8", a:"#DC2626", tx:"#0F172A", mu:"#4B6080", gr:"29,78,216" },
   forest:   { name:"Deep Forest",    emoji:"🟢", bg:"#030F08", bg2:"#061410", card:"#0A1E12", p:"#16A34A", a:"#D97706", tx:"#E8FAF0", mu:"#3A6A4A", gr:"22,163,74" },
   carbon:   { name:"Carbon",         emoji:"🔴", bg:"#080808", bg2:"#0F0F0F", card:"#161616", p:"#EF4444", a:"#F97316", tx:"#FAFAFA", mu:"#555555", gr:"239,68,68" },
   slate:    { name:"Deep Slate",     emoji:"🩵", bg:"#030A0F", bg2:"#061018", card:"#0A1820", p:"#06B6D4", a:"#EC4899", tx:"#E0FAFF", mu:"#2E6070", gr:"6,182,212" },
   obsidian: { name:"Obsidian Amber", emoji:"🟡", bg:"#030200", bg2:"#080704", card:"#100F08", p:"#F59E0B", a:"#10B981", tx:"#FFF8E7", mu:"#6A5A2A", gr:"245,158,11" },
-  sunrise:  { name:"Sunrise",        emoji:"🌅", bg:"#FFFBF0", bg2:"#FFF4DC", card:"#FFECC4", p:"#B45309", a:"#0F766E", tx:"#1C0A00", mu:"#78532A", gr:"180,83,9" },
-  snow:     { name:"Snow White",     emoji:"⬜", bg:"#FFFFFF", bg2:"#EFF4FF", card:"#E2EAFF", p:"#1D4ED8", a:"#DC2626", tx:"#0F172A", mu:"#4B6080", gr:"29,78,216" },
   royal:    { name:"Royal Dark",     emoji:"👑", bg:"#08060F", bg2:"#100C1E", card:"#160F28", p:"#9C6EFF", a:"#D4AF37", tx:"#F5F0FF", mu:"#5A4A72", gr:"156,110,255" },
 };
 const THEME_KEYS = Object.keys(THEMES);
@@ -26,19 +25,19 @@ const scrollTo = id => {
 const L = {
   bn: {
     nav:["কোর্সসমূহ","কেন আমরা","যোগাযোগ"], enroll:"ভর্তি হোন",
-    ticker:["🎓 নতুন সেশনে ভর্তি চলছে — আসন সীমিত","🔥 ৬০% বিশেষ ভর্তি ছাড়","📞 ০১৬৪৩-৯২৮৬৮৭","📜 বাংলাদেশ কারিগরি শিক্ষাবোর্ড অনুমোদিত","💻 মাত্র ৳১,৮৫০ থেকে শুরু"],
+    ticker:["🎓 নতুন সেশনে ভর্তি চলছে — আসন সীমিত","🔥 60% বিশেষ ভর্তি ছাড়","📞 01643-928687","📜 বাংলাদেশ কারিগরি শিক্ষাবোর্ড অনুমোদিত","💻 মাত্র ৳1,850 থেকে শুরু"],
     tag:"বাংলাদেশ কারিগরি শিক্ষাবোর্ড অনুমোদিত",
     h1:"কম্পিউটার শিখুন,", h2:"ক্যারিয়ার গড়ুন",
-    desc:"দৃষ্টি কম্পিউটার প্রশিক্ষণ ইনস্টিটিউটে ৩ মাস, ৬ মাস ও ১ বছর মেয়াদী কোর্স। মাত্র ৳১,৮৫০ থেকে শুরু।",
-    btn1:"ভর্তি হোন এখনই", btn2:"কল করুন: ০১৬৪৩-৯২৮৬৮৭",
-    disc:"৬০% ভর্তি ছাড়", discSub:"সীমিত সময়ের অফার",
+    desc:"দৃষ্টি কম্পিউটার প্রশিক্ষণ ইনস্টিটিউটে ৩ মাস, ৬ মাস ও ১ বছর মেয়াদী কোর্স। মাত্র ৳1,850 থেকে শুরু।",
+    btn1:"ভর্তি হোন এখনই", btn2:"কল করুন: 01643-928687",
+    disc:"60% ভর্তি ছাড়", discSub:"সীমিত সময়ের অফার",
     trust:["সরকার অনুমোদিত","অভিজ্ঞ প্রশিক্ষক","সার্টিফিকেট প্রদান"],
-    stats:[["৫০০+","শিক্ষার্থী"],["৮+","বছর অভিজ্ঞতা"],["৩টি","কোর্স"],["১০০%","সার্টিফিকেট"]],
+    stats:[["500+","শিক্ষার্থী"],["8+","বছর অভিজ্ঞতা"],["3টি","কোর্স"],["100%","সার্টিফিকেট"]],
     cTitle:"আমাদের কোর্সসমূহ", cSub:"আপনার সময় ও বাজেট অনুযায়ী সেরা কোর্সটি বেছে নিন",
     courses:[
-      {dur:"৩ মাস",eng:"3 Months",title:"অফিস বেসিক",price:"১,৮৫০",icon:"💼",topics:["MS Word, Excel, PowerPoint","বাংলা ও ইংরেজি টাইপিং","Email ও Internet","Basic Computer Skills"]},
-      {dur:"৬ মাস",eng:"6 Months",title:"অফিস + ডিজাইন",price:"৩,৫০০",icon:"🎨",tag:"সবচেয়ে জনপ্রিয়",topics:["অফিস বেসিক সম্পূর্ণ","Adobe Photoshop & Illustrator","Logo ও Banner Design","Basic Accounting"]},
-      {dur:"১ বছর",eng:"1 Year",title:"প্রফেশনাল কোর্স",price:"৬,০০০",icon:"🏆",topics:["অফিস + ডিজাইন সম্পূর্ণ","Web Design (HTML/CSS)","Accounting Software","জাতীয় সার্টিফিকেট"]},
+      {dur:"৩ মাস",eng:"3 Months",title:"অফিস বেসিক",price:"1,850",icon:"💼",topics:["MS Word, Excel, PowerPoint","বাংলা ও ইংরেজি টাইপিং","Email ও Internet","Basic Computer Skills"]},
+      {dur:"৬ মাস",eng:"6 Months",title:"অফিস + ডিজাইন",price:"3,500",icon:"🎨",tag:"সবচেয়ে জনপ্রিয়",topics:["অফিস বেসিক সম্পূর্ণ","Adobe Photoshop & Illustrator","Logo ও Banner Design","Basic Accounting"]},
+      {dur:"১ বছর",eng:"1 Year",title:"প্রফেশনাল কোর্স",price:"6,000",icon:"🏆",topics:["অফিস + ডিজাইন সম্পূর্ণ","Web Design (HTML/CSS)","Accounting Software","জাতীয় সার্টিফিকেট"]},
     ],
     cBtn:"এই কোর্সে ভর্তি হোন →",
     wTitle:"কেন আমাদের বেছে নেবেন",
@@ -47,7 +46,7 @@ const L = {
       {icon:"👨‍🏫",t:"অভিজ্ঞ প্রশিক্ষক",d:"দক্ষ ও অভিজ্ঞ শিক্ষকদের সরাসরি তত্ত্বাবধানে শিক্ষা"},
       {icon:"🖥️",t:"আধুনিক ল্যাব",d:"সর্বাধুনিক কম্পিউটার সজ্জিত হাতে-কলমে শিক্ষার পরিবেশ"},
       {icon:"📜",t:"জাতীয় সার্টিফিকেট",d:"কোর্স শেষে সরকার স্বীকৃত সনদ প্রদান করা হয়"},
-      {icon:"💰",t:"সাশ্রয়ী মূল্য",d:"মাত্র ৳১,৮৫০ থেকে শুরু — সবার নাগালের মধ্যে"},
+      {icon:"💰",t:"সাশ্রয়ী মূল্য",d:"মাত্র ৳1,850 থেকে শুরু — সবার নাগালের মধ্যে"},
       {icon:"🕐",t:"নমনীয় সময়সূচী",d:"সকাল, বিকেল ও সন্ধ্যা ব্যাচে ক্লাসের সুবিধা"},
     ],
     sTitle:"মাত্র তিন ধাপে শুরু করুন",
@@ -60,12 +59,12 @@ const L = {
       {n:"সুমাইয়া আক্তার",r:"৩ মাস কোর্স সম্পন্ন",q:"ছোট কোর্স কিন্তু শেখার মান অনেক উন্নত। ফি অনেক সাশ্রয়ী এবং পরিবেশ খুবই ভালো।"},
       {n:"কামাল উদ্দিন",r:"৬ মাস কোর্স সম্পন্ন",q:"এখন নিজেই ব্যানার ও লোগো ডিজাইন করি। দৃষ্টি কম্পিউটারের জন্য অনেক কৃতজ্ঞ।"},
     ],
-    ctaL1:"এখনই ভর্তি হোন,", ctaL2:"পান ৬০% বিশেষ ছাড়!",
+    ctaL1:"এখনই ভর্তি হোন,", ctaL2:"পান 60% বিশেষ ছাড়!",
     ctaDesc:"নতুন সেশনে ভর্তি চলছে। আসন সীমিত — দেরি না করে আজই যোগাযোগ করুন।",
-    ctaBtn:"ভর্তি হোন এখনই", ctaCall:"কল করুন: ০১৬৪৩-৯২৮৬৮৭",
+    ctaBtn:"ভর্তি হোন এখনই", ctaCall:"কল করুন: 01643-928687",
     fDesc:"বাংলাদেশ কারিগরি শিক্ষাবোর্ড অনুমোদিত। সুলভ মূল্যে মানসম্পন্ন আইটি শিক্ষা।",
     fLinks:["৩ মাসের কোর্স","৬ মাসের কোর্স","১ বছরের কোর্স","অফিস কোর্স","গ্রাফিক ডিজাইন"],
-    fContact:["📍 গোপালপুর, টাঙ্গাইল, বাংলাদেশ","📞 ০১৬৪৩-৯২৮৬৮৭","📘 Facebook Page","⏰ শনি–বৃহস্পতি: সকাল ৯টা–রাত ৮টা"],
+    fContact:["📍 গোপালপুর, টাঙ্গাইল, বাংলাদেশ","📞 01643-928687","📘 Facebook Page","⏰ শনি–বৃহস্পতি: সকাল 9টা–রাত 8টা"],
     copy:"© ২০২৫ দৃষ্টি কম্পিউটার ট্রেনিং সেন্টার। সর্বস্বত্ব সংরক্ষিত।",
     approved:"বাংলাদেশ কারিগরি শিক্ষাবোর্ড অনুমোদিত",
     devBy:"বানিয়েছেন", devName:"মেহেদী",
@@ -120,11 +119,12 @@ const L = {
 
 // ─── CSS ─────────────────────────────────────────────────────────────
 const CSS = `
-  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Hind+Siliguri:wght@400;500;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;700;900&display=swap');
+  @font-face{font-family:'BnNums';src:local('Noto Sans Bengali'),local('NotoSansBengali'),url('https://fonts.gstatic.com/s/notosansbengali/v28/Cn-SJsCGWQxOjaGwMQ6fIiMywrNJIky6nvd8BjzVMvJx2mcSPVFpVEqE-6KmsolLudCk8izI0lc.woff2') format('woff2');unicode-range:U+09E6-09EF;font-weight:100 900}
   *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
   html{scroll-behavior:smooth}
-  body{font-family:'Hind Siliguri','Poppins',system-ui,sans-serif;overflow-x:hidden;line-height:1.6;transition:background .3s,color .3s}
-  h1,h2,h3,h4,button{font-family:'Poppins','Hind Siliguri',sans-serif}
+  body{font-family:'BnNums','Hind Siliguri','Poppins',system-ui,sans-serif;overflow-x:hidden;line-height:1.6;transition:background .3s,color .3s}
+  h1,h2,h3,h4,button{font-family:'BnNums','Poppins','Hind Siliguri',sans-serif}
   section{scroll-margin-top:98px}
 
   .sr{opacity:0;transform:translateY(30px);transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1)}
@@ -486,7 +486,7 @@ function StatsBar({ t, c }) {
       <div style={{maxWidth:1100,margin:"0 auto",display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(150px,1fr))",gap:24}} className="sm-g2">
         {c.stats.map(([val,label],i) => (
           <div key={i} className={`sr d${i+1}`} style={{textAlign:"center"}}>
-            <div style={{fontWeight:900,fontSize:"clamp(32px,4.5vw,50px)",lineHeight:1,color:t.p,animation:inView?`countIn .5s ease ${i*.08}s both`:"none"}}>{v[i]}{val.replace(/[0-9৳]/g,"")}</div>
+            <div style={{fontWeight:900,fontSize:"clamp(32px,4.5vw,50px)",lineHeight:1,color:t.p,animation:inView?`countIn .5s ease ${i*.08}s both`:"none"}}>{v[i]}{val.replace(/[0-9০-৯৳,]/g,"")}</div>
             <div style={{height:2,background:`rgba(${t.gr},.12)`,borderRadius:1,margin:"7px auto 7px",width:50,overflow:"hidden"}}>
               <div style={{height:"100%",background:t.p,width:inView?"100%":"0%",transition:`width 1.8s ease ${i*.15}s`}} />
             </div>
