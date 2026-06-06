@@ -303,7 +303,7 @@ function Hero() {
           }}>
             <div style={{ background: "linear-gradient(145deg,rgba(255,255,255,.06),rgba(255,255,255,.02))", backdropFilter: "blur(30px)", border: "1px solid rgba(56,189,248,.2)", borderRadius: 24, padding: "28px 24px", boxShadow: "0 0 60px rgba(14,165,233,.12),inset 0 1px 0 rgba(255,255,255,.08)", animation: "borderPulse 4s ease infinite" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
-                <span style={{ color: T.textMuted, fontSize: 12 }}>নতুন ভর্তি — ২০২৫</span>
+                <span style={{ color: T.textMuted, fontSize: 12 }}>নতুন ভর্তি — ২০২৬</span>
                 <span style={{ background: "linear-gradient(135deg,#F97316,#DC2626)", color: "#fff", fontSize: 10, padding: "3px 10px", borderRadius: 50, fontWeight: 700, boxShadow: "0 0 12px rgba(249,115,22,.6)" }}>LIVE</span>
               </div>
               {COURSES.map(c => (
@@ -632,7 +632,7 @@ function Footer() {
           </div>
         </div>
         <div style={{ borderTop: "1px solid rgba(255,255,255,.06)", paddingTop: 24, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 10 }}>
-          <span style={{ color: "rgba(100,116,139,.5)", fontSize: 13 }}>© ২০২৫ Dristy Computer Training Center. সর্বস্বত্ব সংরক্ষিত।</span>
+          <span style={{ color: "rgba(100,116,139,.5)", fontSize: 13 }}>© ২০২৬ Dristy Computer Training Center. সর্বস্বত্ব সংরক্ষিত।</span>
           <span style={{ color: "rgba(100,116,139,.3)", fontSize: 12 }}>বাংলাদেশ কারিগরি শিক্ষাবোর্ড অনুমোদিত</span>
         </div>
       </div>

@@ -70,7 +70,7 @@ const L = {
     fDesc:"বাংলাদেশ কারিগরি শিক্ষাবোর্ড অনুমোদিত। সুলভ মূল্যে মানসম্পন্ন আইটি শিক্ষা।",
     fLinks:["৩ মাসের কোর্স","৬ মাসের কোর্স","১ বছরের কোর্স","অফিস কোর্স","গ্রাফিক ডিজাইন"],
     fContact:["📍 গোপালপুর, টাঙ্গাইল, বাংলাদেশ","📞 01643-928687","📘 Facebook Page","⏰ শনি–বৃহস্পতি: সকাল 9টা–রাত 8টা"],
-    copy:"© ২০২৫ দৃষ্টি কম্পিউটার ট্রেনিং সেন্টার। সর্বস্বত্ব সংরক্ষিত।",
+    copy:"© ২০২৬ দৃষ্টি কম্পিউটার ট্রেনিং সেন্টার। সর্বস্বত্ব সংরক্ষিত।",
     approved:"বাংলাদেশ কারিগরি শিক্ষাবোর্ড অনুমোদিত",
     devBy:"বানিয়েছেন", devName:"মেহেদী",
   },
@@ -570,7 +570,7 @@ function Hero({ t, c }) {
           <div className="hide-sm" style={{opacity:on?1:0,transform:on?"none":"translateX(36px)",transition:"all .9s cubic-bezier(.16,1,.3,1) .42s",width:280,flexShrink:0}}>
             <div style={{background:`rgba(255,255,255,.04)`,backdropFilter:"blur(20px)",border:`1px solid rgba(${t.gr},.16)`,borderRadius:17,padding:"22px 20px",boxShadow:`0 0 44px rgba(${t.gr},.07),inset 0 1px 0 rgba(255,255,255,.05)`}}>
               <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
-                <span style={{color:t.mu,fontSize:11}}>ভর্তি প্যাকেজ ২০২৫</span>
+                <span style={{color:t.mu,fontSize:11}}>ভর্তি প্যাকেজ ২০২৬</span>
                 <span style={{background:t.p,color:t.bg,fontSize:9,padding:"3px 9px",borderRadius:50,fontWeight:700}}>LIVE</span>
               </div>
               {c.courses.map((cr,i) => (
