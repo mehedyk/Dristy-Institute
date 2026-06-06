@@ -3,13 +3,13 @@ import { useState, useEffect, useRef, useCallback } from "react";
 // ─── THEMES (ordered: navy → snow → ... → sunrise) ──────────────────
 const THEMES = {
   navy:     { name:"Deep Navy",      emoji:"🔵", bg:"#030912", bg2:"#061020", card:"#0A1628", p:"#2B7FE1", a:"#E8401A", tx:"#EAF2FF", mu:"#4A6E8A", gr:"43,127,225" },
-  sunrise:  { name:"Sunrise",        emoji:"🌅", bg:"#FFFBF0", bg2:"#FFF4DC", card:"#FFECC4", p:"#B45309", a:"#0F766E", tx:"#1C0A00", mu:"#78532A", gr:"180,83,9" },
+  sunrise:  { name:"Sunrise",        emoji:"🌅", bg:"#FFFBF0", bg2:"#FFF4DC", card:"#FFECC4", p:"#B45309", a:"#0F766E", tx:"#1C0A00", mu:"#78532A", gr:"180,83,9" },  
   midnight: { name:"Midnight",       emoji:"🟣", bg:"#06060F", bg2:"#0C0C1E", card:"#111128", p:"#7C6FE8", a:"#F59E0B", tx:"#F0EEFF", mu:"#504D7A", gr:"124,111,232" },
   snow:     { name:"Snow White",     emoji:"⬜", bg:"#FFFFFF", bg2:"#EFF4FF", card:"#E2EAFF", p:"#1D4ED8", a:"#DC2626", tx:"#0F172A", mu:"#4B6080", gr:"29,78,216" },
   forest:   { name:"Deep Forest",    emoji:"🟢", bg:"#030F08", bg2:"#061410", card:"#0A1E12", p:"#16A34A", a:"#D97706", tx:"#E8FAF0", mu:"#3A6A4A", gr:"22,163,74" },
   carbon:   { name:"Carbon",         emoji:"🔴", bg:"#080808", bg2:"#0F0F0F", card:"#161616", p:"#EF4444", a:"#F97316", tx:"#FAFAFA", mu:"#555555", gr:"239,68,68" },
   slate:    { name:"Deep Slate",     emoji:"🩵", bg:"#030A0F", bg2:"#061018", card:"#0A1820", p:"#06B6D4", a:"#EC4899", tx:"#E0FAFF", mu:"#2E6070", gr:"6,182,212" },
-  obsidian: { name:"Obsidian Amber", emoji:"🟡", bg:"#030200", bg2:"#080704", card:"#100F08", p:"#F59E0B", a:"#10B981", tx:"#FFF8E7", mu:"#6A5A2A", gr:"245,158,11" },
+  obsidian: { name:"Obsidian Amber", emoji:"🟡", bg:"#030200", bg2:"#080704", card:"#100F08", p:"#F59E0B", a:"#10B981", tx:"#FFF8E7", mu:"#6A5A2A", gr:"245,158,11" },  
   royal:    { name:"Royal Dark",     emoji:"👑", bg:"#08060F", bg2:"#100C1E", card:"#160F28", p:"#9C6EFF", a:"#D4AF37", tx:"#F5F0FF", mu:"#5A4A72", gr:"156,110,255" },
 };
 const THEME_KEYS = Object.keys(THEMES);
@@ -20,6 +20,11 @@ const scrollTo = id => {
   const el = document.getElementById(id);
   if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 98, behavior: "smooth" });
 };
+
+// ─── CURSOR EFFECTS ──────────────────────────────────────────────────
+const CURSOR_EFFECTS = ["off","dot","glow","sparkle","ripple","spotlight"];
+const CURSOR_ICONS   = { off:"○", dot:"·", glow:"◉", sparkle:"✸", ripple:"⊕", spotlight:"☀" };
+const CURSOR_LABELS  = { off:"Off", dot:"Dots", glow:"Glow", sparkle:"Stars", ripple:"Ripple", spotlight:"Light" };
 
 // ─── BILINGUAL CONTENT ───────────────────────────────────────────────
 const L = {
@@ -111,7 +116,7 @@ const L = {
     fDesc:"Bangladesh Technical Education Board Approved. Quality IT education at affordable prices.",
     fLinks:["3 Month Course","6 Month Course","1 Year Course","Office Course","Graphic Design"],
     fContact:["📍 Gopalpur, Tangail, Bangladesh","📞 01643-928687","📘 Facebook Page","⏰ Sat–Thu: 9AM–8PM"],
-    copy:"© 2025 Dristy Computer Training Center. All rights reserved.",
+    copy:"© 2026 Dristy Computer Training Center. All rights reserved.",
     approved:"Bangladesh Technical Education Board Approved",
     devBy:"Developed by", devName:"Mehedy",
   },
@@ -140,6 +145,8 @@ const CSS = `
   @keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
   @keyframes slideInRight{from{transform:translateX(100%)}to{transform:translateX(0)}}
   @keyframes themeFlash{0%{opacity:0}20%{opacity:1}100%{opacity:0}}
+  @keyframes cardRipple{0%{width:0;height:0;opacity:.45}100%{width:220px;height:220px;opacity:0}}
+  @keyframes burstOut{0%{transform:rotate(var(--r,0deg)) translateX(0);opacity:.8}100%{transform:rotate(var(--r,0deg)) translateX(55px);opacity:0}}
 
   .card{transition:transform .28s ease,box-shadow .28s ease}
   .card:hover{transform:translateY(-5px)}
@@ -221,28 +228,73 @@ function useClickOutside(ref, cb) {
   }, [cb]);
 }
 
-// ─── DOT TRAIL CURSOR ────────────────────────────────────────────────
-function DotTrailCursor({ active, rgb }) {
-  const ref = useRef(null);
+// ─── CURSOR SYSTEM — 6 effects ───────────────────────────────────────
+function CursorSystem({ effect, rgb }) {
+  const canvasRef = useRef(null);
+  const domRef    = useRef(null);
+
+  // Canvas-based: dot, sparkle, ripple
   useEffect(() => {
-    if (!active) return;
-    const c = ref.current; if (!c) return;
-    const ctx = c.getContext("2d"); let id;
-    const resize = () => { c.width = window.innerWidth; c.height = window.innerHeight; };
+    if (!["dot","sparkle","ripple"].includes(effect)) return;
+    const c = canvasRef.current; if (!c) return;
+    const ctx = c.getContext("2d"); let animId;
+    const resize = () => { c.width=window.innerWidth; c.height=window.innerHeight; };
     resize(); window.addEventListener("resize", resize);
-    const trail = [];
-    const onMove = e => { trail.push({x:e.clientX,y:e.clientY,life:1}); if(trail.length>22) trail.shift(); };
+    const trail=[]; const sparks=[]; const ripples=[];
+    const onMove = (e) => {
+      if (effect==="dot") { trail.push({x:e.clientX,y:e.clientY,life:1}); if(trail.length>24) trail.shift(); }
+      if (effect==="sparkle" && Math.random()>.45)
+        for(let i=0;i<3;i++) sparks.push({x:e.clientX,y:e.clientY,vx:(Math.random()-.5)*4,vy:(Math.random()-.5)*4-1.2,life:1,sz:Math.random()*3+1});
+    };
+    const onClick = (e) => { if(effect==="ripple") ripples.push({x:e.clientX,y:e.clientY,r:0,life:1}); };
     window.addEventListener("mousemove", onMove);
+    window.addEventListener("click", onClick);
+
+    const star = (x,y,sz) => {
+      ctx.beginPath();
+      for(let p=0;p<4;p++){
+        const a=(p/4)*Math.PI*2,r1=sz*2.2,r2=sz*.5;
+        if(p===0) ctx.moveTo(Math.cos(a)*r1,Math.sin(a)*r1); else ctx.lineTo(Math.cos(a)*r1,Math.sin(a)*r1);
+        const ma=a+Math.PI/4; ctx.lineTo(Math.cos(ma)*r2,Math.sin(ma)*r2);
+      }
+      ctx.closePath(); ctx.fill();
+    };
+
     const draw = () => {
       ctx.clearRect(0,0,c.width,c.height);
-      trail.forEach(d => { d.life=Math.max(0,d.life-.055); if(d.life<=0) return; ctx.beginPath(); ctx.arc(d.x,d.y,5*d.life,0,Math.PI*2); ctx.fillStyle=`rgba(${rgb},${d.life*.75})`; ctx.fill(); });
-      id = requestAnimationFrame(draw);
+      if(effect==="dot")
+        trail.forEach(d=>{ d.life=Math.max(0,d.life-.052); if(!d.life)return; ctx.beginPath(); ctx.arc(d.x,d.y,5*d.life,0,Math.PI*2); ctx.fillStyle=`rgba(${rgb},${d.life*.8})`; ctx.fill(); });
+      if(effect==="sparkle")
+        for(let i=sparks.length-1;i>=0;i--){ const s=sparks[i]; s.x+=s.vx; s.y+=s.vy; s.vy+=.09; s.life=Math.max(0,s.life-.03); if(!s.life){sparks.splice(i,1);continue;} ctx.save(); ctx.translate(s.x,s.y); ctx.rotate(s.life*Math.PI*2); ctx.fillStyle=`rgba(${rgb},${s.life})`; star(0,0,s.sz*s.life); ctx.restore(); }
+      if(effect==="ripple")
+        for(let i=ripples.length-1;i>=0;i--){ const r=ripples[i]; r.r+=4.5; r.life=Math.max(0,r.life-.022); if(!r.life){ripples.splice(i,1);continue;} ctx.beginPath(); ctx.arc(r.x,r.y,r.r,0,Math.PI*2); ctx.strokeStyle=`rgba(${rgb},${r.life*.85})`; ctx.lineWidth=2; ctx.stroke(); ctx.beginPath(); ctx.arc(r.x,r.y,r.r*.55,0,Math.PI*2); ctx.strokeStyle=`rgba(${rgb},${r.life*.35})`; ctx.lineWidth=1; ctx.stroke(); }
+      animId=requestAnimationFrame(draw);
     };
     draw();
-    return () => { cancelAnimationFrame(id); window.removeEventListener("resize",resize); window.removeEventListener("mousemove",onMove); };
-  }, [active, rgb]);
-  if (!active) return null;
-  return <canvas ref={ref} style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:99999}} />;
+    return ()=>{ cancelAnimationFrame(animId); window.removeEventListener("resize",resize); window.removeEventListener("mousemove",onMove); window.removeEventListener("click",onClick); };
+  }, [effect, rgb]);
+
+  // DOM-based: glow ring, spotlight
+  useEffect(() => {
+    if (!["glow","spotlight"].includes(effect) || !domRef.current) return;
+    const el = domRef.current;
+    const onMove = (e) => {
+      if(effect==="glow"){ el.style.left=(e.clientX-18)+"px"; el.style.top=(e.clientY-18)+"px"; el.style.opacity="1"; }
+      if(effect==="spotlight") el.style.background=`radial-gradient(circle 250px at ${e.clientX}px ${e.clientY}px,rgba(${rgb},.13),transparent 70%)`;
+    };
+    const onLeave = ()=>{ el.style.opacity="0"; };
+    window.addEventListener("mousemove",onMove); document.addEventListener("mouseleave",onLeave);
+    return ()=>{ window.removeEventListener("mousemove",onMove); document.removeEventListener("mouseleave",onLeave); };
+  }, [effect, rgb]);
+
+  if(effect==="off") return null;
+  return (
+    <>
+      {["dot","sparkle","ripple"].includes(effect) && <canvas ref={canvasRef} style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:99999}} />}
+      {effect==="glow" && <div ref={domRef} style={{position:"fixed",width:36,height:36,borderRadius:"50%",border:`2px solid rgba(${rgb},.8)`,boxShadow:`0 0 16px rgba(${rgb},.55),0 0 36px rgba(${rgb},.2),inset 0 0 10px rgba(${rgb},.1)`,pointerEvents:"none",zIndex:99999,opacity:0,transition:"opacity .15s"}} />}
+      {effect==="spotlight" && <div ref={domRef} style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:99998,background:"transparent"}} />}
+    </>
+  );
 }
 
 // ─── PARTICLE CANVAS ─────────────────────────────────────────────────
@@ -264,6 +316,57 @@ function ParticleCanvas({ rgb }) {
     return () => { cancelAnimationFrame(id); window.removeEventListener("resize",resize); };
   }, [rgb]);
   return <canvas ref={ref} style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none"}} />;
+}
+
+// ─── TILT + MAGNETIC + RIPPLE + BURST CARD ───────────────────────────
+function TiltGlareCard({ children, style, max = 14 }) {
+  const ref = useRef(null); const glare = useRef(null); const borderGlow = useRef(null);
+  const [ripples, setRipples] = useState([]);
+  const [burst, setBurst] = useState(false);
+
+  const onMouseMove = useCallback((e) => {
+    if (!ref.current) return;
+    const { left, top, width, height } = ref.current.getBoundingClientRect();
+    const x=(e.clientX-left)/width, y=(e.clientY-top)/height;
+    const rx=(y-.5)*-max*2, ry=(x-.5)*max*2, tx=(x-.5)*9, ty=(y-.5)*9;
+    ref.current.style.transform=`perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg) translate(${tx}px,${ty}px) scale3d(1.04,1.04,1.04)`;
+    if(glare.current){ glare.current.style.background=`radial-gradient(circle at ${x*100}% ${y*100}%,rgba(255,255,255,.22),transparent 55%)`; glare.current.style.opacity="1"; }
+    if(borderGlow.current) borderGlow.current.style.background=`radial-gradient(circle 130px at ${x*100}% ${y*100}%,rgba(255,255,255,.14),transparent 65%)`;
+  }, [max]);
+
+  const onMouseEnter = useCallback(() => { setBurst(true); setTimeout(()=>setBurst(false),600); }, []);
+  const onMouseLeave = useCallback(() => {
+    if(ref.current) ref.current.style.transform="perspective(900px) rotateX(0) rotateY(0) translate(0,0) scale3d(1,1,1)";
+    if(glare.current) glare.current.style.opacity="0";
+    if(borderGlow.current) borderGlow.current.style.background="transparent";
+  }, []);
+
+  const onClick = useCallback((e) => {
+    if(!ref.current) return;
+    const { left, top } = ref.current.getBoundingClientRect();
+    const id = Date.now()+Math.random();
+    setRipples(r=>[...r,{x:e.clientX-left,y:e.clientY-top,id}]);
+    setTimeout(()=>setRipples(r=>r.filter(rp=>rp.id!==id)),700);
+  }, []);
+
+  return (
+    <div ref={ref} onMouseMove={onMouseMove} onMouseLeave={onMouseLeave} onMouseEnter={onMouseEnter} onClick={onClick}
+      className="tilt" style={{...style, position:"relative", overflow:"hidden"}}>
+      <div ref={glare} style={{position:"absolute",inset:0,borderRadius:"inherit",opacity:0,transition:"opacity .25s",pointerEvents:"none",zIndex:10}} />
+      <div ref={borderGlow} style={{position:"absolute",inset:0,borderRadius:"inherit",background:"transparent",pointerEvents:"none",zIndex:9}} />
+      {ripples.map(rp=>(
+        <div key={rp.id} style={{position:"absolute",left:rp.x,top:rp.y,width:0,height:0,borderRadius:"50%",background:"rgba(255,255,255,.22)",transform:"translate(-50%,-50%)",animation:"cardRipple .65s ease-out forwards",pointerEvents:"none",zIndex:11}} />
+      ))}
+      {burst && Array.from({length:8},(_,i)=>(
+        <div key={i} style={{position:"absolute",left:"50%",top:"50%",width:5,height:5,borderRadius:"50%",background:"rgba(255,255,255,.5)",pointerEvents:"none",zIndex:12,
+          animation:`burstOut .55s ease-out ${i*0.045}s forwards`,
+          transformOrigin:"0 0",
+          transform:`rotate(${i*45}deg) translateX(0px)`,
+        }} />
+      ))}
+      {children}
+    </div>
+  );
 }
 
 // ─── WHATSAPP ICON ───────────────────────────────────────────────────
@@ -308,7 +411,7 @@ function NewsTicker({ t, c }) {
 }
 
 // ─── MOBILE MENU ─────────────────────────────────────────────────────
-function MobileMenu({ open, onClose, t, c, lang, setLang, themeKey, setThemeKey, cursorOn, setCursorOn, onThemeSwitch }) {
+function MobileMenu({ open, onClose, t, c, lang, setLang, themeKey, setThemeKey, cursorEffect, setCursorEffect, onThemeSwitch }) {
   useEffect(() => { document.body.style.overflow = open ? "hidden" : ""; return () => { document.body.style.overflow = ""; }; }, [open]);
   return (
     <>
@@ -331,7 +434,17 @@ function MobileMenu({ open, onClose, t, c, lang, setLang, themeKey, setThemeKey,
         <div style={{height:1,background:`rgba(${t.gr},.1)`,margin:"0 10px"}} />
         <div style={{padding:"12px 10px",display:"flex",gap:8}}>
           <button onClick={()=>setLang(l=>l==="bn"?"en":"bn")} style={{flex:1,padding:"10px",background:`rgba(${t.gr},.09)`,border:`1px solid rgba(${t.gr},.2)`,borderRadius:8,color:t.p,fontSize:12,fontWeight:700,cursor:"pointer"}}>{lang==="bn"?"Switch to EN":"বাংলায় দেখুন"}</button>
-          <button onClick={()=>setCursorOn(v=>!v)} style={{padding:"10px 13px",background:cursorOn?t.p:`rgba(${t.gr},.09)`,border:`1px solid rgba(${t.gr},.2)`,borderRadius:8,color:cursorOn?t.bg:t.mu,fontSize:12,cursor:"pointer"}}>✦ Trail</button>
+        </div>
+        <div style={{padding:"0 10px 10px"}}>
+          <div style={{fontSize:9,color:t.mu,letterSpacing:".1em",textTransform:"uppercase",marginBottom:8,paddingLeft:4,fontWeight:700}}>CURSOR EFFECTS</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:5}}>
+            {CURSOR_EFFECTS.map(ef=>(
+              <button key={ef} onClick={()=>setCursorEffect(ef)} style={{padding:"9px 4px",background:cursorEffect===ef?t.p:`rgba(${t.gr},.07)`,border:`1px solid ${cursorEffect===ef?t.p:`rgba(${t.gr},.12)`}`,borderRadius:8,color:cursorEffect===ef?t.bg:t.mu,fontSize:11,cursor:"pointer",transition:"all .18s",display:"flex",flexDirection:"column",alignItems:"center",gap:3}}>
+                <span style={{fontSize:15}}>{CURSOR_ICONS[ef]}</span>
+                <span style={{fontSize:9,fontWeight:cursorEffect===ef?700:400}}>{CURSOR_LABELS[ef]}</span>
+              </button>
+            ))}
+          </div>
         </div>
         <div style={{padding:"0 10px 10px"}}>
           <div style={{fontSize:9,color:t.mu,letterSpacing:".1em",textTransform:"uppercase",marginBottom:8,paddingLeft:4,fontWeight:700}}>THEMES</div>
@@ -354,7 +467,7 @@ function MobileMenu({ open, onClose, t, c, lang, setLang, themeKey, setThemeKey,
 }
 
 // ─── NAVBAR ──────────────────────────────────────────────────────────
-function Navbar({ t, c, lang, setLang, themeKey, cursorOn, setCursorOn, menuOpen, setMenuOpen, onCycleTheme }) {
+function Navbar({ t, c, lang, setLang, themeKey, cursorEffect, cycleCursor, menuOpen, setMenuOpen, onCycleTheme }) {
   const [sc, setSc] = useState(false);
   useEffect(() => { const fn=()=>setSc(window.scrollY>70); window.addEventListener("scroll",fn); return()=>window.removeEventListener("scroll",fn); }, []);
   const th = THEMES[themeKey];
@@ -389,7 +502,10 @@ function Navbar({ t, c, lang, setLang, themeKey, cursorOn, setCursorOn, menuOpen
             </div>
             <span style={{fontSize:10,color:t.mu,marginLeft:2}}>›</span>
           </button>
-          <button onClick={()=>setCursorOn(v=>!v)} title="Cursor Trail" className="hide-sm" style={{width:30,height:30,borderRadius:7,background:cursorOn?t.p:`rgba(${t.gr},.09)`,border:`1px solid rgba(${t.gr},.22)`,color:cursorOn?t.bg:t.mu,fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",transition:"all .2s"}}>✦</button>
+          <button onClick={cycleCursor} title={`Cursor: ${CURSOR_LABELS[cursorEffect]}`} className="hide-sm" style={{minWidth:34,height:30,borderRadius:7,background:cursorEffect!=="off"?t.p:`rgba(${t.gr},.09)`,border:`1px solid rgba(${t.gr},.22)`,color:cursorEffect!=="off"?t.bg:t.mu,fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:"0 9px",gap:4,transition:"all .2s"}}>
+            <span>{CURSOR_ICONS[cursorEffect]}</span>
+            <span style={{fontSize:9,opacity:.75}}>{CURSOR_LABELS[cursorEffect]}</span>
+          </button>
           <button onClick={()=>window.open("tel:01643928687")} className="hide-sm" style={{background:t.p,color:t.bg,border:"none",padding:"8px 17px",borderRadius:8,fontWeight:700,fontSize:12,cursor:"pointer",boxShadow:`0 0 13px rgba(${t.gr},.38)`,transition:"all .22s",whiteSpace:"nowrap"}}
             onMouseEnter={e=>{e.target.style.transform="translateY(-1px)";e.target.style.boxShadow=`0 0 22px rgba(${t.gr},.55)`;}} onMouseLeave={e=>{e.target.style.transform="none";e.target.style.boxShadow=`0 0 13px rgba(${t.gr},.38)`;}}
           >{c.enroll}</button>
@@ -751,7 +867,10 @@ function FloatingWA() {
 export default function App() {
   const [themeKey, setThemeKey] = useState("navy");
   const [lang, setLang] = useState("bn");
-  const [cursorOn, setCursorOn] = useState(false);
+  const [cursorEffect, setCursorEffect] = useState("off");
+  const cycleCursor = useCallback(() => {
+    setCursorEffect(e => { const i=CURSOR_EFFECTS.indexOf(e); return CURSOR_EFFECTS[(i+1)%CURSOR_EFFECTS.length]; });
+  }, []);
   const [menuOpen, setMenuOpen] = useState(false);
   const [flashTrigger, setFlashTrigger] = useState(0);
   const t = THEMES[themeKey];
@@ -773,11 +892,11 @@ export default function App() {
   return (
     <>
       <style>{CSS + themeVars(t)}</style>
-      <DotTrailCursor active={cursorOn} rgb={t.gr} />
+      <CursorSystem effect={cursorEffect} rgb={t.gr} />
       <ThemeFlash trigger={flashTrigger} />
       <ScrollProgressBar t={t} />
-      <Navbar t={t} c={c} lang={lang} setLang={setLang} themeKey={themeKey} cursorOn={cursorOn} setCursorOn={setCursorOn} menuOpen={menuOpen} setMenuOpen={setMenuOpen} onCycleTheme={cycleTheme} />
-      <MobileMenu open={menuOpen} onClose={()=>setMenuOpen(false)} t={t} c={c} lang={lang} setLang={setLang} themeKey={themeKey} setThemeKey={setThemeKey} cursorOn={cursorOn} setCursorOn={setCursorOn} onThemeSwitch={switchTheme} />
+      <Navbar t={t} c={c} lang={lang} setLang={setLang} themeKey={themeKey} cursorEffect={cursorEffect} cycleCursor={cycleCursor} menuOpen={menuOpen} setMenuOpen={setMenuOpen} onCycleTheme={cycleTheme} />
+      <MobileMenu open={menuOpen} onClose={()=>setMenuOpen(false)} t={t} c={c} lang={lang} setLang={setLang} themeKey={themeKey} setThemeKey={setThemeKey} cursorEffect={cursorEffect} setCursorEffect={setCursorEffect} onThemeSwitch={switchTheme} />
       <Hero key={`${themeKey}-${lang}`} t={t} c={c} />
       <StatsBar t={t} c={c} />
       <Courses t={t} c={c} />
