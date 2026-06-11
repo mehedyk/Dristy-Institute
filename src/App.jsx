@@ -1,32 +1,33 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 
-// ─── THEMES (ordered: navy → snow → ... → sunrise) ──────────────────
+// ─── THEMES (10 themes: dark/light alternating) ───────────────────────
+// 1-slate(darkish) 2-sunrise(light) 3-abyss(dark) 4-snow(light)
+// 5-forest(darkish black-green) 6-jade(light NEW) 7-carbon(dark)
+// 8-ocean(light NEW) 9-obsidian(darkish) 10-rose(light NEW)
 const THEMES = {
-  navy:     { name:"Deep Navy",      emoji:"🔵", bg:"#030912", bg2:"#061020", card:"#0A1628", p:"#2B7FE1", a:"#E8401A", tx:"#EAF2FF", mu:"#4A6E8A", gr:"43,127,225" },
-  sunrise:  { name:"Sunrise",        emoji:"🌅", bg:"#FFFBF0", bg2:"#FFF4DC", card:"#FFECC4", p:"#B45309", a:"#0F766E", tx:"#1C0A00", mu:"#78532A", gr:"180,83,9" },  
-  midnight: { name:"Midnight",       emoji:"🟣", bg:"#06060F", bg2:"#0C0C1E", card:"#111128", p:"#7C6FE8", a:"#F59E0B", tx:"#F0EEFF", mu:"#504D7A", gr:"124,111,232" },
-  snow:     { name:"Snow White",     emoji:"⬜", bg:"#FFFFFF", bg2:"#EFF4FF", card:"#E2EAFF", p:"#1D4ED8", a:"#DC2626", tx:"#0F172A", mu:"#4B6080", gr:"29,78,216" },
-  forest:   { name:"Deep Forest",    emoji:"🟢", bg:"#030F08", bg2:"#061410", card:"#0A1E12", p:"#16A34A", a:"#D97706", tx:"#E8FAF0", mu:"#3A6A4A", gr:"22,163,74" },
-  carbon:   { name:"Carbon",         emoji:"🔴", bg:"#080808", bg2:"#0F0F0F", card:"#161616", p:"#EF4444", a:"#F97316", tx:"#FAFAFA", mu:"#555555", gr:"239,68,68" },
-  slate:    { name:"Deep Slate",     emoji:"🩵", bg:"#030A0F", bg2:"#061018", card:"#0A1820", p:"#06B6D4", a:"#EC4899", tx:"#E0FAFF", mu:"#2E6070", gr:"6,182,212" },
-  obsidian: { name:"Obsidian Amber", emoji:"🟡", bg:"#030200", bg2:"#080704", card:"#100F08", p:"#F59E0B", a:"#10B981", tx:"#FFF8E7", mu:"#6A5A2A", gr:"245,158,11" },  
-  royal:    { name:"Royal Dark",     emoji:"👑", bg:"#08060F", bg2:"#100C1E", card:"#160F28", p:"#9C6EFF", a:"#D4AF37", tx:"#F5F0FF", mu:"#5A4A72", gr:"156,110,255" },
+  slate:    { name:"Deep Slate",   emoji:"🩵", dark:true,  bg:"#030A0F", bg2:"#061018", card:"#0A1820", p:"#06B6D4", a:"#EC4899", tx:"#E0FAFF", mu:"#2E6070", gr:"6,182,212" },
+  sunrise:  { name:"Sunrise",      emoji:"🌅", dark:false, bg:"#FFFBF0", bg2:"#FFF4DC", card:"#FFECC4", p:"#B45309", a:"#0F766E", tx:"#1C0A00", mu:"#78532A", gr:"180,83,9" },
+  abyss:    { name:"Abyss",        emoji:"🌌", dark:true,  bg:"#040408", bg2:"#080810", card:"#0E0E1C", p:"#818CF8", a:"#F472B6", tx:"#EEF2FF", mu:"#4F4688", gr:"129,140,248" },
+  snow:     { name:"Snow White",   emoji:"⬜", dark:false, bg:"#FFFFFF", bg2:"#EFF4FF", card:"#E2EAFF", p:"#1D4ED8", a:"#DC2626", tx:"#0F172A", mu:"#4B6080", gr:"29,78,216" },
+  forest:   { name:"Deep Forest",  emoji:"🌿", dark:true,  bg:"#030F08", bg2:"#061410", card:"#0A1E12", p:"#16A34A", a:"#D97706", tx:"#E8FAF0", mu:"#3A6A4A", gr:"22,163,74" },
+  jade:     { name:"Jade Light",   emoji:"💚", dark:false, bg:"#F0FAF5", bg2:"#E4F5ED", card:"#D4EDDE", p:"#059669", a:"#D97706", tx:"#0A2318", mu:"#527A65", gr:"5,150,105" },
+  carbon:   { name:"Carbon",       emoji:"🔴", dark:true,  bg:"#080808", bg2:"#0F0F0F", card:"#161616", p:"#EF4444", a:"#F97316", tx:"#FAFAFA", mu:"#555555", gr:"239,68,68" },
+  ocean:    { name:"Ocean Mist",   emoji:"🌊", dark:false, bg:"#F0FFFE", bg2:"#E0FAF8", card:"#C8F2EE", p:"#0D9488", a:"#F97316", tx:"#062726", mu:"#3D8A84", gr:"13,148,136" },
+  obsidian: { name:"Obsidian",     emoji:"🟡", dark:true,  bg:"#030200", bg2:"#080704", card:"#100F08", p:"#F59E0B", a:"#10B981", tx:"#FFF8E7", mu:"#6A5A2A", gr:"245,158,11" },
+  rose:     { name:"Rose Petal",   emoji:"🌸", dark:false, bg:"#FFF8F8", bg2:"#FFEEF0", card:"#FFE0E4", p:"#E11D48", a:"#059669", tx:"#200A0E", mu:"#8A4B5A", gr:"225,29,72" },
 };
 const THEME_KEYS = Object.keys(THEMES);
 
-// ─── SCROLL UTIL ─────────────────────────────────────────────────────
 const NAV_IDS = ["courses","why-us","contact"];
 const scrollTo = id => {
   const el = document.getElementById(id);
   if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 98, behavior: "smooth" });
 };
 
-// ─── CURSOR EFFECTS ──────────────────────────────────────────────────
-const CURSOR_EFFECTS = ["off","dot","glow","sparkle","ripple","spotlight"];
-const CURSOR_ICONS   = { off:"○", dot:"·", glow:"◉", sparkle:"✸", ripple:"⊕", spotlight:"☀" };
-const CURSOR_LABELS  = { off:"Off", dot:"Dots", glow:"Glow", sparkle:"Stars", ripple:"Ripple", spotlight:"Light" };
+const CURSOR_EFFECTS = ["off","dot","glow","sparkle","ripple","spotlight","trail","comet","fire"];
+const CURSOR_ICONS   = { off:"○", dot:"·", glow:"◉", sparkle:"✸", ripple:"⊕", spotlight:"☀", trail:"〰", comet:"☄", fire:"🔥" };
+const CURSOR_LABELS  = { off:"Off", dot:"Dots", glow:"Glow", sparkle:"Stars", ripple:"Ripple", spotlight:"Light", trail:"Trail", comet:"Comet", fire:"Fire" };
 
-// ─── BILINGUAL CONTENT ───────────────────────────────────────────────
 const L = {
   bn: {
     nav:["কোর্সসমূহ","কেন আমরা","যোগাযোগ"], enroll:"ভর্তি হোন",
@@ -123,13 +124,18 @@ const L = {
 };
 
 // ─── CSS ─────────────────────────────────────────────────────────────
+// Font choice: Kalpurush — clean, modern Bengali typeface.
+// Perfect for a professional computer-training brand: technical
+// precision meets warm, community-focused Bengali identity.
 const CSS = `
+  @import url('https://fonts.maateen.me/kalpurush/font.css');
   @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Sans+Bengali:wght@400;500;700;900&display=swap');
   @font-face{font-family:'BnNums';src:local('Noto Sans Bengali'),local('NotoSansBengali'),url('https://fonts.gstatic.com/s/notosansbengali/v28/Cn-SJsCGWQxOjaGwMQ6fIiMywrNJIky6nvd8BjzVMvJx2mcSPVFpVEqE-6KmsolLudCk8izI0lc.woff2') format('woff2');unicode-range:U+09E6-09EF;font-weight:100 900}
   *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
   html{scroll-behavior:smooth}
-  body{font-family:'BnNums','Hind Siliguri','Poppins',system-ui,sans-serif;overflow-x:hidden;line-height:1.6;transition:background .3s,color .3s}
-  h1,h2,h3,h4,button{font-family:'BnNums','Poppins','Hind Siliguri',sans-serif}
+  body{font-family:'BnNums','Kalpurush','Hind Siliguri','Poppins',system-ui,sans-serif;overflow-x:hidden;line-height:1.6;transition:background .3s,color .3s}
+  h1,h2,h3,h4{font-family:'BnNums','Kalpurush','Poppins','Hind Siliguri',sans-serif}
+  button{font-family:'BnNums','Kalpurush','Poppins','Hind Siliguri',sans-serif}
   section{scroll-margin-top:98px}
 
   .sr{opacity:0;transform:translateY(30px);transition:opacity .8s cubic-bezier(.16,1,.3,1),transform .8s cubic-bezier(.16,1,.3,1)}
@@ -143,10 +149,34 @@ const CSS = `
   @keyframes pulseRing{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.12)}}
   @keyframes countIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
   @keyframes fadeIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
-  @keyframes slideInRight{from{transform:translateX(100%)}to{transform:translateX(0)}}
   @keyframes themeFlash{0%{opacity:0}20%{opacity:1}100%{opacity:0}}
   @keyframes cardRipple{0%{width:0;height:0;opacity:.45}100%{width:220px;height:220px;opacity:0}}
   @keyframes burstOut{0%{transform:rotate(var(--r,0deg)) translateX(0);opacity:.8}100%{transform:rotate(var(--r,0deg)) translateX(55px);opacity:0}}
+
+  @keyframes orbSpin{
+    0%{transform:scale(1) rotate(0deg)}
+    35%{transform:scale(1.42) rotate(195deg)}
+    68%{transform:scale(.9) rotate(318deg)}
+    100%{transform:scale(1) rotate(360deg)}
+  }
+  @keyframes starTwinkle{
+    0%,100%{opacity:.9;transform:scale(1)}
+    42%{opacity:.06;transform:scale(.35)}
+    72%{opacity:.55;transform:scale(.7)}
+  }
+  @keyframes sunGlow{
+    0%,100%{box-shadow:0 0 13px rgba(255,220,0,.95),0 0 28px rgba(255,185,0,.4)}
+    50%{box-shadow:0 0 22px rgba(255,235,0,1),0 0 48px rgba(255,200,0,.7)}
+  }
+  @keyframes moonFloat{
+    0%,100%{transform:translateY(0) rotate(0deg)}
+    50%{transform:translateY(-2px) rotate(5deg)}
+  }
+  @keyframes sunRaysSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+  @keyframes cloudDrift{
+    0%,100%{transform:translateX(0) scaleX(1)}
+    50%{transform:translateX(8px) scaleX(1.12)}
+  }
 
   .card{transition:transform .28s ease,box-shadow .28s ease}
   .card:hover{transform:translateY(-5px)}
@@ -228,23 +258,34 @@ function useClickOutside(ref, cb) {
   }, [cb]);
 }
 
-// ─── CURSOR SYSTEM — 6 effects ───────────────────────────────────────
+// ─── CURSOR SYSTEM — 9 effects ───────────────────────────────────────
 function CursorSystem({ effect, rgb }) {
   const canvasRef = useRef(null);
   const domRef    = useRef(null);
 
-  // Canvas-based: dot, sparkle, ripple
   useEffect(() => {
-    if (!["dot","sparkle","ripple"].includes(effect)) return;
+    const CANVAS_FX = ["dot","sparkle","ripple","trail","comet","fire"];
+    if (!CANVAS_FX.includes(effect)) return;
     const c = canvasRef.current; if (!c) return;
     const ctx = c.getContext("2d"); let animId;
     const resize = () => { c.width=window.innerWidth; c.height=window.innerHeight; };
     resize(); window.addEventListener("resize", resize);
-    const trail=[]; const sparks=[]; const ripples=[];
+
+    const trail=[],sparks=[],ripples=[],trailPts=[],cometPts=[],firePts=[];
+
     const onMove = (e) => {
       if (effect==="dot") { trail.push({x:e.clientX,y:e.clientY,life:1}); if(trail.length>24) trail.shift(); }
       if (effect==="sparkle" && Math.random()>.45)
         for(let i=0;i<3;i++) sparks.push({x:e.clientX,y:e.clientY,vx:(Math.random()-.5)*4,vy:(Math.random()-.5)*4-1.2,life:1,sz:Math.random()*3+1});
+      if (effect==="trail")  { trailPts.push({x:e.clientX,y:e.clientY,life:1}); if(trailPts.length>55) trailPts.shift(); }
+      if (effect==="comet")  { cometPts.push({x:e.clientX,y:e.clientY,life:1}); if(cometPts.length>34) cometPts.shift(); }
+      if (effect==="fire") {
+        for(let i=0;i<4;i++) firePts.push({
+          x:e.clientX+(Math.random()-.5)*18, y:e.clientY+5,
+          vx:(Math.random()-.5)*2.2, vy:-(Math.random()*3+1.8),
+          life:1, size:Math.random()*5.5+2.5
+        });
+      }
     };
     const onClick = (e) => { if(effect==="ripple") ripples.push({x:e.clientX,y:e.clientY,r:0,life:1}); };
     window.addEventListener("mousemove", onMove);
@@ -262,19 +303,78 @@ function CursorSystem({ effect, rgb }) {
 
     const draw = () => {
       ctx.clearRect(0,0,c.width,c.height);
+
       if(effect==="dot")
         trail.forEach(d=>{ d.life=Math.max(0,d.life-.052); if(!d.life)return; ctx.beginPath(); ctx.arc(d.x,d.y,5*d.life,0,Math.PI*2); ctx.fillStyle=`rgba(${rgb},${d.life*.8})`; ctx.fill(); });
+
       if(effect==="sparkle")
         for(let i=sparks.length-1;i>=0;i--){ const s=sparks[i]; s.x+=s.vx; s.y+=s.vy; s.vy+=.09; s.life=Math.max(0,s.life-.03); if(!s.life){sparks.splice(i,1);continue;} ctx.save(); ctx.translate(s.x,s.y); ctx.rotate(s.life*Math.PI*2); ctx.fillStyle=`rgba(${rgb},${s.life})`; star(0,0,s.sz*s.life); ctx.restore(); }
+
       if(effect==="ripple")
         for(let i=ripples.length-1;i>=0;i--){ const r=ripples[i]; r.r+=4.5; r.life=Math.max(0,r.life-.022); if(!r.life){ripples.splice(i,1);continue;} ctx.beginPath(); ctx.arc(r.x,r.y,r.r,0,Math.PI*2); ctx.strokeStyle=`rgba(${rgb},${r.life*.85})`; ctx.lineWidth=2; ctx.stroke(); ctx.beginPath(); ctx.arc(r.x,r.y,r.r*.55,0,Math.PI*2); ctx.strokeStyle=`rgba(${rgb},${r.life*.35})`; ctx.lineWidth=1; ctx.stroke(); }
+
+      if(effect==="trail"){
+        ctx.lineCap="round"; ctx.lineJoin="round";
+        for(let i=trailPts.length-1;i>=0;i--){
+          trailPts[i].life=Math.max(0,trailPts[i].life-.016);
+          if(!trailPts[i].life){ trailPts.splice(i,1); }
+        }
+        for(let i=1;i<trailPts.length;i++){
+          const p=i/trailPts.length;
+          ctx.beginPath(); ctx.moveTo(trailPts[i-1].x,trailPts[i-1].y); ctx.lineTo(trailPts[i].x,trailPts[i].y);
+          ctx.strokeStyle=`rgba(${rgb},${p*trailPts[i].life*.78})`; ctx.lineWidth=p*8; ctx.stroke();
+        }
+        if(trailPts.length>0){
+          const h=trailPts[trailPts.length-1];
+          ctx.beginPath(); ctx.arc(h.x,h.y,5,0,Math.PI*2); ctx.fillStyle=`rgba(${rgb},.9)`; ctx.fill();
+          ctx.beginPath(); ctx.arc(h.x,h.y,9,0,Math.PI*2); ctx.fillStyle=`rgba(${rgb},.2)`; ctx.fill();
+        }
+      }
+
+      if(effect==="comet"){
+        ctx.lineCap="round"; ctx.lineJoin="round";
+        for(let i=cometPts.length-1;i>=0;i--){
+          cometPts[i].life=Math.max(0,cometPts[i].life-.022);
+          if(!cometPts[i].life){ cometPts.splice(i,1); }
+        }
+        for(let i=1;i<cometPts.length;i++){
+          const p=i/cometPts.length;
+          ctx.beginPath(); ctx.moveTo(cometPts[i-1].x,cometPts[i-1].y); ctx.lineTo(cometPts[i].x,cometPts[i].y);
+          ctx.strokeStyle=`rgba(${rgb},${p*cometPts[i].life*.95})`; ctx.lineWidth=p*7; ctx.stroke();
+        }
+        if(cometPts.length>0){
+          const h=cometPts[cometPts.length-1];
+          ctx.beginPath(); ctx.arc(h.x,h.y,11,0,Math.PI*2); ctx.fillStyle=`rgba(${rgb},.18)`; ctx.fill();
+          ctx.beginPath(); ctx.arc(h.x,h.y,6.5,0,Math.PI*2); ctx.fillStyle=`rgba(${rgb},.55)`; ctx.fill();
+          ctx.beginPath(); ctx.arc(h.x,h.y,3.5,0,Math.PI*2); ctx.fillStyle="rgba(255,255,255,.96)"; ctx.fill();
+        }
+      }
+
+      if(effect==="fire"){
+        for(let i=firePts.length-1;i>=0;i--){
+          const p=firePts[i];
+          p.x+=p.vx; p.y+=p.vy; p.vy-=.065; p.vx*=.97; p.size*=.963;
+          p.life=Math.max(0,p.life-.026);
+          if(!p.life||p.size<.35){firePts.splice(i,1);continue;}
+          const phase=1-p.life;
+          const g=Math.floor(Math.max(0,195-phase*240));
+          ctx.beginPath(); ctx.arc(p.x,p.y,p.size*p.life*1.4,0,Math.PI*2);
+          ctx.fillStyle=`rgba(255,${Math.floor(g*.45)},0,${p.life*.35})`; ctx.fill();
+          ctx.beginPath(); ctx.arc(p.x,p.y,p.size*p.life,0,Math.PI*2);
+          ctx.fillStyle=`rgba(255,${g},0,${p.life*.85})`; ctx.fill();
+          if(p.life>.55){
+            ctx.beginPath(); ctx.arc(p.x,p.y,p.size*p.life*.4,0,Math.PI*2);
+            ctx.fillStyle=`rgba(255,240,180,${(p.life-.55)*1.8})`; ctx.fill();
+          }
+        }
+      }
+
       animId=requestAnimationFrame(draw);
     };
     draw();
     return ()=>{ cancelAnimationFrame(animId); window.removeEventListener("resize",resize); window.removeEventListener("mousemove",onMove); window.removeEventListener("click",onClick); };
   }, [effect, rgb]);
 
-  // DOM-based: glow ring, spotlight
   useEffect(() => {
     if (!["glow","spotlight"].includes(effect) || !domRef.current) return;
     const el = domRef.current;
@@ -290,7 +390,7 @@ function CursorSystem({ effect, rgb }) {
   if(effect==="off") return null;
   return (
     <>
-      {["dot","sparkle","ripple"].includes(effect) && <canvas ref={canvasRef} style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:99999}} />}
+      {["dot","sparkle","ripple","trail","comet","fire"].includes(effect) && <canvas ref={canvasRef} style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:99999}} />}
       {effect==="glow" && <div ref={domRef} style={{position:"fixed",width:36,height:36,borderRadius:"50%",border:`2px solid rgba(${rgb},.8)`,boxShadow:`0 0 16px rgba(${rgb},.55),0 0 36px rgba(${rgb},.2),inset 0 0 10px rgba(${rgb},.1)`,pointerEvents:"none",zIndex:99999,opacity:0,transition:"opacity .15s"}} />}
       {effect==="spotlight" && <div ref={domRef} style={{position:"fixed",inset:0,pointerEvents:"none",zIndex:99998,background:"transparent"}} />}
     </>
@@ -318,12 +418,11 @@ function ParticleCanvas({ rgb }) {
   return <canvas ref={ref} style={{position:"absolute",inset:0,width:"100%",height:"100%",pointerEvents:"none"}} />;
 }
 
-// ─── TILT + MAGNETIC + RIPPLE + BURST CARD ───────────────────────────
+// ─── TILT GLARE CARD ─────────────────────────────────────────────────
 function TiltGlareCard({ children, style, max = 14 }) {
   const ref = useRef(null); const glare = useRef(null); const borderGlow = useRef(null);
   const [ripples, setRipples] = useState([]);
   const [burst, setBurst] = useState(false);
-
   const onMouseMove = useCallback((e) => {
     if (!ref.current) return;
     const { left, top, width, height } = ref.current.getBoundingClientRect();
@@ -333,14 +432,12 @@ function TiltGlareCard({ children, style, max = 14 }) {
     if(glare.current){ glare.current.style.background=`radial-gradient(circle at ${x*100}% ${y*100}%,rgba(255,255,255,.22),transparent 55%)`; glare.current.style.opacity="1"; }
     if(borderGlow.current) borderGlow.current.style.background=`radial-gradient(circle 130px at ${x*100}% ${y*100}%,rgba(255,255,255,.14),transparent 65%)`;
   }, [max]);
-
   const onMouseEnter = useCallback(() => { setBurst(true); setTimeout(()=>setBurst(false),600); }, []);
   const onMouseLeave = useCallback(() => {
     if(ref.current) ref.current.style.transform="perspective(900px) rotateX(0) rotateY(0) translate(0,0) scale3d(1,1,1)";
     if(glare.current) glare.current.style.opacity="0";
     if(borderGlow.current) borderGlow.current.style.background="transparent";
   }, []);
-
   const onClick = useCallback((e) => {
     if(!ref.current) return;
     const { left, top } = ref.current.getBoundingClientRect();
@@ -348,35 +445,24 @@ function TiltGlareCard({ children, style, max = 14 }) {
     setRipples(r=>[...r,{x:e.clientX-left,y:e.clientY-top,id}]);
     setTimeout(()=>setRipples(r=>r.filter(rp=>rp.id!==id)),700);
   }, []);
-
   return (
     <div ref={ref} onMouseMove={onMouseMove} onMouseLeave={onMouseLeave} onMouseEnter={onMouseEnter} onClick={onClick}
-      className="tilt" style={{...style, position:"relative", overflow:"hidden"}}>
+      className="tilt" style={{...style,position:"relative",overflow:"hidden"}}>
       <div ref={glare} style={{position:"absolute",inset:0,borderRadius:"inherit",opacity:0,transition:"opacity .25s",pointerEvents:"none",zIndex:10}} />
       <div ref={borderGlow} style={{position:"absolute",inset:0,borderRadius:"inherit",background:"transparent",pointerEvents:"none",zIndex:9}} />
-      {ripples.map(rp=>(
-        <div key={rp.id} style={{position:"absolute",left:rp.x,top:rp.y,width:0,height:0,borderRadius:"50%",background:"rgba(255,255,255,.22)",transform:"translate(-50%,-50%)",animation:"cardRipple .65s ease-out forwards",pointerEvents:"none",zIndex:11}} />
-      ))}
-      {burst && Array.from({length:8},(_,i)=>(
-        <div key={i} style={{position:"absolute",left:"50%",top:"50%",width:5,height:5,borderRadius:"50%",background:"rgba(255,255,255,.5)",pointerEvents:"none",zIndex:12,
-          animation:`burstOut .55s ease-out ${i*0.045}s forwards`,
-          transformOrigin:"0 0",
-          transform:`rotate(${i*45}deg) translateX(0px)`,
-        }} />
-      ))}
+      {ripples.map(rp=>(<div key={rp.id} style={{position:"absolute",left:rp.x,top:rp.y,width:0,height:0,borderRadius:"50%",background:"rgba(255,255,255,.22)",transform:"translate(-50%,-50%)",animation:"cardRipple .65s ease-out forwards",pointerEvents:"none",zIndex:11}} />))}
+      {burst && Array.from({length:8},(_,i)=>(<div key={i} style={{position:"absolute",left:"50%",top:"50%",width:5,height:5,borderRadius:"50%",background:"rgba(255,255,255,.5)",pointerEvents:"none",zIndex:12,animation:`burstOut .55s ease-out ${i*0.045}s forwards`,transformOrigin:"0 0",transform:`rotate(${i*45}deg) translateX(0px)`}} />))}
       {children}
     </div>
   );
 }
 
-// ─── WHATSAPP ICON ───────────────────────────────────────────────────
 const WAIcon = ({size=24}) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
   </svg>
 );
 
-// ─── THEME FLASH EFFECT ──────────────────────────────────────────────
 function ThemeFlash({ trigger }) {
   const [show, setShow] = useState(false);
   useEffect(() => {
@@ -389,13 +475,11 @@ function ThemeFlash({ trigger }) {
   return <div style={{position:"fixed",inset:0,zIndex:9997,background:"rgba(255,255,255,.18)",animation:"themeFlash .45s ease forwards",pointerEvents:"none"}} />;
 }
 
-// ─── SCROLL PROGRESS ─────────────────────────────────────────────────
 function ScrollProgressBar({ t }) {
   const p = useScrollProgress();
   return <div style={{position:"fixed",top:0,left:0,zIndex:10000,height:3,width:`${p}%`,background:t.p,boxShadow:`0 0 8px rgba(${t.gr},.8)`,transition:"width .08s"}} />;
 }
 
-// ─── NEWS TICKER ─────────────────────────────────────────────────────
 function NewsTicker({ t, c }) {
   const items = [...c.ticker, ...c.ticker];
   return (
@@ -410,7 +494,6 @@ function NewsTicker({ t, c }) {
   );
 }
 
-// ─── MOBILE MENU ─────────────────────────────────────────────────────
 function MobileMenu({ open, onClose, t, c, lang, setLang, themeKey, setThemeKey, cursorEffect, setCursorEffect, onThemeSwitch }) {
   useEffect(() => { document.body.style.overflow = open ? "hidden" : ""; return () => { document.body.style.overflow = ""; }; }, [open]);
   return (
@@ -449,10 +532,11 @@ function MobileMenu({ open, onClose, t, c, lang, setLang, themeKey, setThemeKey,
         <div style={{padding:"0 10px 10px"}}>
           <div style={{fontSize:9,color:t.mu,letterSpacing:".1em",textTransform:"uppercase",marginBottom:8,paddingLeft:4,fontWeight:700}}>THEMES</div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:5}}>
-            {Object.entries(THEMES).map(([key,th]) => (
-              <button key={key} onClick={()=>{onThemeSwitch(key);onClose();}} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,padding:"9px 5px",background:themeKey===key?`rgba(${th.gr},.15)`:`rgba(${t.gr},.05)`,border:`1px solid ${themeKey===key?`rgba(${th.gr},.38)`:`rgba(${t.gr},.1)`}`,borderRadius:9,cursor:"pointer",transition:"all .16s"}}>
+            {Object.entries(THEMES).map(([key,th],i) => (
+              <button key={key} onClick={()=>{onThemeSwitch(key);onClose();}} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,padding:"9px 5px",background:themeKey===key?`rgba(${th.gr},.15)`:`rgba(${t.gr},.05)`,border:`1px solid ${themeKey===key?`rgba(${th.gr},.38)`:`rgba(${t.gr},.1)`}`,borderRadius:9,cursor:"pointer",transition:"all .16s",position:"relative"}}>
+                <div style={{position:"absolute",top:3,right:3,width:5,height:5,borderRadius:"50%",background:th.dark?"#818CF8":"#F59E0B",opacity:.75}} />
                 <div style={{display:"flex",gap:2}}><div style={{width:9,height:9,borderRadius:"50%",background:th.p}}/><div style={{width:9,height:9,borderRadius:"50%",background:th.a}}/></div>
-                <span style={{color:themeKey===key?th.p:t.mu,fontSize:8.5,fontWeight:themeKey===key?700:400,textAlign:"center",lineHeight:1.3}}>{th.emoji}<br/>{th.name.split(" ")[0]}</span>
+                <span style={{color:themeKey===key?th.p:t.mu,fontSize:8,fontWeight:themeKey===key?700:400,textAlign:"center",lineHeight:1.3}}>{th.emoji}<br/>{i+1}.{th.name.split(" ")[0]}</span>
               </button>
             ))}
           </div>
@@ -466,11 +550,98 @@ function MobileMenu({ open, onClose, t, c, lang, setLang, themeKey, setThemeKey,
   );
 }
 
+// ─── ANIMATED DAY / NIGHT THEME TOGGLE ───────────────────────────────
+// Moon + stars for dark themes. Sun + clouds + rays for light themes.
+// On click: orb spins 360°, sky background cross-fades, stars appear/vanish.
+function ThemeToggleBtn({ themeKey, onCycleTheme, t }) {
+  const [clickCount, setClickCount] = useState(0);
+  const isDark = THEMES[themeKey]?.dark ?? true;
+  const idx = THEME_KEYS.indexOf(themeKey);
+  const nextKey = THEME_KEYS[(idx+1) % THEME_KEYS.length];
+
+  const handle = () => {
+    setClickCount(n => n + 1);
+    onCycleTheme();
+  };
+
+  const STARS = [[7,5,1.6,0],[14,4,.9,.35],[24,8,1.4,.7],[36,5,.9,1.1],[47,9,1.6,1.45],[55,5,1,1.8],[20,19,1,.55],[42,20,1.1,1.25]];
+
+  return (
+    <button
+      onClick={handle}
+      title={`Theme ${idx+1}/10: ${THEMES[themeKey].name} → ${THEMES[nextKey].name}`}
+      style={{
+        position:"relative", width:74, height:34, borderRadius:17,
+        border:"none", cursor:"pointer", padding:0, overflow:"hidden",
+        background: isDark
+          ? "linear-gradient(135deg,#04051A 0%,#0C1038 45%,#060D26 100%)"
+          : "linear-gradient(135deg,#70C8F5 0%,#C8EEFF 35%,#FEFAE0 65%,#FFE878 100%)",
+        boxShadow: isDark
+          ? `0 0 0 1.5px rgba(${t.gr},.28), 0 0 16px rgba(${t.gr},.18), inset 0 1px 0 rgba(255,255,255,.05)`
+          : `0 0 0 1.5px rgba(200,150,0,.45), 0 0 16px rgba(255,200,50,.28), inset 0 1px 0 rgba(255,255,255,.6)`,
+        transition:"background .65s ease, box-shadow .4s ease",
+        flexShrink:0,
+      }}
+    >
+      {/* Stars */}
+      {STARS.map(([x,y,size,delay],i) => (
+        <div key={i} style={{
+          position:"absolute",left:x,top:y,width:size,height:size,
+          borderRadius:"50%",background:"#fff",
+          opacity:isDark?.88:0,
+          transition:"opacity .6s ease",
+          animation:isDark?`starTwinkle 1.9s ease-in-out ${delay}s infinite`:"none",
+          pointerEvents:"none",
+        }} />
+      ))}
+      {/* Clouds */}
+      <div style={{position:"absolute",left:5,top:9,fontSize:9,opacity:isDark?0:.55,transition:"opacity .5s ease",animation:isDark?"none":"cloudDrift 5s ease-in-out infinite",pointerEvents:"none",lineHeight:1}}>☁</div>
+      <div style={{position:"absolute",left:18,top:19,fontSize:7,opacity:isDark?0:.38,transition:"opacity .5s ease .1s",animation:isDark?"none":"cloudDrift 7s ease-in-out 2.5s infinite",pointerEvents:"none",lineHeight:1}}>☁</div>
+      {/* Horizon glow */}
+      {!isDark && <div style={{position:"absolute",bottom:0,left:0,right:0,height:14,background:"linear-gradient(to top,rgba(255,200,50,.22),transparent)",pointerEvents:"none"}} />}
+      {/* Orb — key remount triggers orbSpin animation on each click */}
+      <div
+        key={`orb-${clickCount}`}
+        style={{
+          position:"absolute",width:26,height:26,borderRadius:"50%",
+          top:4, left:isDark?5:43,
+          transition:"left .58s cubic-bezier(.16,1,.3,1),background .55s,box-shadow .55s",
+          background:isDark
+            ?"radial-gradient(circle at 33% 30%,#F0F4FF,#C8D0E4 60%,#A8B4CC)"
+            :"radial-gradient(circle at 30% 28%,#FFFDE4,#FFE040 40%,#FFB800)",
+          boxShadow:isDark
+            ?"inset 2px -2px 4px rgba(0,0,0,.35),0 0 8px rgba(200,215,255,.3)"
+            :"0 0 14px rgba(255,220,0,.98),0 0 28px rgba(255,190,0,.55),0 0 50px rgba(255,170,0,.2)",
+          animation:clickCount>0
+            ?"orbSpin .68s cubic-bezier(.16,1,.3,1)"
+            :(isDark?"moonFloat 3.2s ease-in-out infinite":"sunGlow 2.6s ease-in-out infinite"),
+          overflow:"hidden",flexShrink:0,
+        }}
+      >
+        {isDark && <div style={{position:"absolute",width:20,height:20,borderRadius:"50%",background:"rgba(4,5,26,.78)",top:-5,left:12,pointerEvents:"none"}} />}
+        {!isDark && <div style={{position:"absolute",inset:5,borderRadius:"50%",background:"rgba(255,255,210,.55)",pointerEvents:"none"}} />}
+      </div>
+      {/* Sun rays ring */}
+      <div
+        key={`rays-${clickCount}`}
+        style={{
+          position:"absolute",width:40,height:40,borderRadius:"50%",
+          top:4-7,left:43-7,
+          border:"1.5px dashed rgba(255,195,40,.38)",
+          opacity:isDark?0:1,transition:"opacity .5s ease",
+          animation:"sunRaysSpin 7s linear infinite",pointerEvents:"none",
+        }}
+      />
+      {/* Counter pill */}
+      <div style={{position:"absolute",bottom:3,right:5,fontSize:7,fontWeight:800,lineHeight:1,color:isDark?"rgba(180,200,255,.55)":"rgba(120,80,0,.5)",pointerEvents:"none",letterSpacing:".02em"}}>{idx+1}/{THEME_KEYS.length}</div>
+    </button>
+  );
+}
+
 // ─── NAVBAR ──────────────────────────────────────────────────────────
 function Navbar({ t, c, lang, setLang, themeKey, cursorEffect, cycleCursor, menuOpen, setMenuOpen, onCycleTheme }) {
   const [sc, setSc] = useState(false);
   useEffect(() => { const fn=()=>setSc(window.scrollY>70); window.addEventListener("scroll",fn); return()=>window.removeEventListener("scroll",fn); }, []);
-  const th = THEMES[themeKey];
   return (
     <div style={{position:"fixed",top:0,left:0,right:0,zIndex:998}}>
       <NewsTicker t={t} c={c} />
@@ -492,16 +663,8 @@ function Navbar({ t, c, lang, setLang, themeKey, cursorEffect, cycleCursor, menu
           <button onClick={()=>setLang(l=>l==="bn"?"en":"bn")} style={{background:`rgba(${t.gr},.09)`,border:`1px solid rgba(${t.gr},.22)`,color:t.p,padding:"5px 11px",borderRadius:7,fontSize:11,fontWeight:700,cursor:"pointer",transition:"all .2s",whiteSpace:"nowrap"}}
             onMouseEnter={e=>e.currentTarget.style.background=`rgba(${t.gr},.18)`} onMouseLeave={e=>e.currentTarget.style.background=`rgba(${t.gr},.09)`}
           >{lang==="bn"?"EN":"বাং"}</button>
-          {/* Cycle theme button */}
-          <button onClick={onCycleTheme} title={`Theme: ${th.name} → next`} style={{display:"flex",alignItems:"center",gap:4,background:`rgba(${t.gr},.09)`,border:`1px solid rgba(${t.gr},.22)`,padding:"5px 10px",borderRadius:7,cursor:"pointer",transition:"all .2s",whiteSpace:"nowrap"}}
-            onMouseEnter={e=>e.currentTarget.style.background=`rgba(${t.gr},.18)`} onMouseLeave={e=>e.currentTarget.style.background=`rgba(${t.gr},.09)`}
-          >
-            <div style={{display:"flex",gap:2,alignItems:"center"}}>
-              <div style={{width:7,height:7,borderRadius:"50%",background:t.p}}/>
-              <div style={{width:5,height:5,borderRadius:"50%",background:t.a}}/>
-            </div>
-            <span style={{fontSize:10,color:t.mu,marginLeft:2}}>›</span>
-          </button>
+          {/* ── Animated day/night theme toggle button ── */}
+          <ThemeToggleBtn themeKey={themeKey} onCycleTheme={onCycleTheme} t={t} />
           <button onClick={cycleCursor} title={`Cursor: ${CURSOR_LABELS[cursorEffect]}`} className="hide-sm" style={{minWidth:34,height:30,borderRadius:7,background:cursorEffect!=="off"?t.p:`rgba(${t.gr},.09)`,border:`1px solid rgba(${t.gr},.22)`,color:cursorEffect!=="off"?t.bg:t.mu,fontSize:13,cursor:"pointer",display:"flex",alignItems:"center",justifyContent:"center",padding:"0 9px",gap:4,transition:"all .2s"}}>
             <span>{CURSOR_ICONS[cursorEffect]}</span>
             <span style={{fontSize:9,opacity:.75}}>{CURSOR_LABELS[cursorEffect]}</span>
@@ -547,8 +710,8 @@ function Hero({ t, c }) {
               <span style={{color:t.p,fontSize:11,fontWeight:600,letterSpacing:".04em"}}>{c.tag}</span>
             </div>
             <h1 style={{...a("0.1s"),fontWeight:900,fontSize:"clamp(34px,5.2vw,62px)",lineHeight:1.08,marginBottom:14}}>
-              <span style={{display:"block",color:t.tx,fontFamily:"monospace,'Courier New'"}}>{s1||c.h1}</span>
-              <span style={{display:"block",color:t.p,fontFamily:"monospace,'Courier New'"}}>{s2||c.h2}</span>
+              <span style={{display:"block",color:t.tx}}>{s1||c.h1}</span>
+              <span style={{display:"block",color:t.p}}>{s2||c.h2}</span>
             </h1>
             <p style={{...a("0.22s"),fontSize:"clamp(13px,1.6vw,15px)",color:t.tx+"88",lineHeight:1.88,marginBottom:32,maxWidth:440}}>{c.desc}</p>
             <div style={{...a("0.32s"),display:"flex",gap:12,flexWrap:"wrap"}}>
@@ -593,7 +756,6 @@ function Hero({ t, c }) {
   );
 }
 
-// ─── STATS ────────────────────────────────────────────────────────────
 function StatsBar({ t, c }) {
   const [ref, inView] = useInView(.3);
   const v = [useCounter(500,inView),useCounter(8,inView),useCounter(3,inView),useCounter(100,inView)];
@@ -614,7 +776,6 @@ function StatsBar({ t, c }) {
   );
 }
 
-// ─── COURSES ──────────────────────────────────────────────────────────
 function Courses({ t, c }) {
   return (
     <section id="courses" style={{padding:"88px 5%",background:t.bg}}>
@@ -661,7 +822,6 @@ function Courses({ t, c }) {
   );
 }
 
-// ─── FEATURES ─────────────────────────────────────────────────────────
 function Features({ t, c }) {
   return (
     <section id="why-us" style={{padding:"88px 5%",background:t.bg2,borderTop:`1px solid rgba(${t.gr},.08)`}}>
@@ -684,7 +844,6 @@ function Features({ t, c }) {
   );
 }
 
-// ─── STEPS ────────────────────────────────────────────────────────────
 function Steps({ t, c }) {
   return (
     <section style={{padding:"88px 5%",background:t.bg,borderTop:`1px solid rgba(${t.gr},.07)`}}>
@@ -712,7 +871,6 @@ function Steps({ t, c }) {
   );
 }
 
-// ─── TESTIMONIALS ─────────────────────────────────────────────────────
 function Testimonials({ t, c }) {
   const doubled = [...c.tests,...c.tests];
   return (
@@ -741,7 +899,6 @@ function Testimonials({ t, c }) {
   );
 }
 
-// ─── CTA ──────────────────────────────────────────────────────────────
 function CTA({ t, c }) {
   return (
     <section id="contact" style={{padding:"0 5% 88px"}}>
@@ -773,7 +930,6 @@ function CTA({ t, c }) {
   );
 }
 
-// ─── FOOTER ───────────────────────────────────────────────────────────
 function Footer({ t, c }) {
   return (
     <footer style={{background:t.bg2,borderTop:`1px solid rgba(${t.gr},.08)`}}>
@@ -807,7 +963,6 @@ function Footer({ t, c }) {
             <span style={{color:t.mu+"88",fontSize:11}}>{c.copy}</span>
             <span style={{color:t.mu+"55",fontSize:10}}>{c.approved}</span>
           </div>
-          {/* Developer credit */}
           <div style={{color:t.mu+"99",fontSize:11}}>
             {c.devBy}{" "}
             <a href="https://mehedy.netlify.app" target="_blank" rel="noreferrer" style={{color:t.p,fontWeight:700,textDecoration:"none",transition:"opacity .2s"}}
@@ -820,7 +975,7 @@ function Footer({ t, c }) {
   );
 }
 
-// ─── THEME SWITCHER (bottom-left floating panel) ─────────────────────
+// ─── THEME SWITCHER floating panel ───────────────────────────────────
 function ThemeSwitcher({ themeKey, t, onSwitch }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -828,17 +983,22 @@ function ThemeSwitcher({ themeKey, t, onSwitch }) {
   return (
     <div ref={ref} style={{position:"fixed",bottom:28,left:24,zIndex:999}}>
       {open && (
-        <div style={{position:"absolute",bottom:58,left:0,background:`${t.bg2}F5`,backdropFilter:"blur(20px)",border:`1px solid rgba(${t.gr},.18)`,borderRadius:14,padding:"14px 12px",width:224,boxShadow:"0 8px 40px rgba(0,0,0,.45)",animation:"fadeIn .2s ease"}}>
+        <div style={{position:"absolute",bottom:58,left:0,background:`${t.bg2}F5`,backdropFilter:"blur(20px)",border:`1px solid rgba(${t.gr},.18)`,borderRadius:14,padding:"14px 12px",width:240,boxShadow:"0 8px 40px rgba(0,0,0,.45)",animation:"fadeIn .2s ease"}}>
           <div style={{fontSize:9,color:t.mu,letterSpacing:".1em",textTransform:"uppercase",marginBottom:9,paddingLeft:3,fontWeight:700}}>ALL THEMES</div>
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr 1fr",gap:6}}>
-            {Object.entries(THEMES).map(([key,th])=>(
-              <button key={key} onClick={()=>{onSwitch(key);setOpen(false);}} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,padding:"9px 5px",background:themeKey===key?`rgba(${th.gr},.15)`:`rgba(${t.gr},.05)`,border:`1px solid ${themeKey===key?`rgba(${th.gr},.38)`:`rgba(${t.gr},.1)`}`,borderRadius:9,cursor:"pointer",transition:"all .16s"}}
+            {Object.entries(THEMES).map(([key,th],i)=>(
+              <button key={key} onClick={()=>{onSwitch(key);setOpen(false);}} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4,padding:"9px 5px",background:themeKey===key?`rgba(${th.gr},.15)`:`rgba(${t.gr},.05)`,border:`1px solid ${themeKey===key?`rgba(${th.gr},.38)`:`rgba(${t.gr},.1)`}`,borderRadius:9,cursor:"pointer",transition:"all .16s",position:"relative"}}
                 onMouseEnter={e=>{if(themeKey!==key)e.currentTarget.style.background=`rgba(${t.gr},.1)`;}} onMouseLeave={e=>{if(themeKey!==key)e.currentTarget.style.background=`rgba(${t.gr},.05)`;}}
               >
+                <div style={{position:"absolute",top:4,right:4,width:5,height:5,borderRadius:"50%",background:th.dark?"#818CF8":"#F59E0B",opacity:.75}} />
                 <div style={{display:"flex",gap:2}}><div style={{width:9,height:9,borderRadius:"50%",background:th.p}}/><div style={{width:9,height:9,borderRadius:"50%",background:th.a}}/></div>
-                <span style={{color:themeKey===key?th.p:t.mu,fontSize:8.5,fontWeight:themeKey===key?700:400,textAlign:"center",lineHeight:1.3}}>{th.emoji}<br/>{th.name.split(" ")[0]}</span>
+                <span style={{color:themeKey===key?th.p:t.mu,fontSize:8,fontWeight:themeKey===key?700:400,textAlign:"center",lineHeight:1.3}}>{th.emoji}<br/>{i+1}.{th.name.split(" ")[0]}</span>
               </button>
             ))}
+          </div>
+          <div style={{marginTop:9,paddingTop:8,borderTop:`1px solid rgba(${t.gr},.1)`,display:"flex",gap:12,justifyContent:"center"}}>
+            <div style={{display:"flex",alignItems:"center",gap:4,fontSize:8,color:t.mu}}><div style={{width:6,height:6,borderRadius:"50%",background:"#818CF8"}} />Dark</div>
+            <div style={{display:"flex",alignItems:"center",gap:4,fontSize:8,color:t.mu}}><div style={{width:6,height:6,borderRadius:"50%",background:"#F59E0B"}} />Light</div>
           </div>
         </div>
       )}
@@ -849,7 +1009,6 @@ function ThemeSwitcher({ themeKey, t, onSwitch }) {
   );
 }
 
-// ─── FLOATING WHATSAPP ───────────────────────────────────────────────
 function FloatingWA() {
   const [show, setShow] = useState(false);
   useEffect(() => { const to=setTimeout(()=>setShow(true),1800); return()=>clearTimeout(to); }, []);
@@ -863,9 +1022,8 @@ function FloatingWA() {
   );
 }
 
-// ─── APP ──────────────────────────────────────────────────────────────
 export default function App() {
-  const [themeKey, setThemeKey] = useState("navy");
+  const [themeKey, setThemeKey] = useState("slate");
   const [lang, setLang] = useState("bn");
   const [cursorEffect, setCursorEffect] = useState("off");
   const cycleCursor = useCallback(() => {
@@ -883,8 +1041,7 @@ export default function App() {
 
   const cycleTheme = useCallback(() => {
     const idx = THEME_KEYS.indexOf(themeKey);
-    const next = THEME_KEYS[(idx + 1) % THEME_KEYS.length];
-    switchTheme(next);
+    switchTheme(THEME_KEYS[(idx + 1) % THEME_KEYS.length]);
   }, [themeKey, switchTheme]);
 
   useScrollReveal();
